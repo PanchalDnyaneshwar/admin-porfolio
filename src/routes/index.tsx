@@ -13,6 +13,9 @@ import BlogsPage from '@/pages/BlogsPage';
 import MediaPage from '@/pages/MediaPage';
 import MessagesPage from '@/pages/MessagesPage';
 import SubscribersPage from '@/pages/SubscribersPage';
+import EmailPage from '@/pages/EmailPage';
+import EmailTemplatesPage from '@/pages/EmailTemplatesPage';
+import EmailHistoryPage from '@/pages/EmailHistoryPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 function AppRoutes() {
@@ -36,6 +39,9 @@ function AppRoutes() {
         <Route path={APP_ROUTES.blogs} element={<BlogsPage />} />
         <Route path={APP_ROUTES.media} element={<MediaPage />} />
         <Route path={APP_ROUTES.messages} element={<MessagesPage />} />
+        <Route path={APP_ROUTES.email} element={<EmailPage />} />
+        <Route path={APP_ROUTES.emailTemplates} element={<EmailTemplatesPage />} />
+        <Route path={APP_ROUTES.emailHistory} element={<EmailHistoryPage />} />
         <Route path={APP_ROUTES.subscribers} element={<SubscribersPage />} />
       </Route>
 

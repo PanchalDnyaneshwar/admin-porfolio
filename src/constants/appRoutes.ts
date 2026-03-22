@@ -10,4 +10,7 @@
   media: '/media',
   messages: '/messages',
   subscribers: '/subscribers',
+  email: '/email',
+  emailTemplates: '/email/templates',
+  emailHistory: '/email/history',
 };

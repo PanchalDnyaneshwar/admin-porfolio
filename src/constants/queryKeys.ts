@@ -9,4 +9,6 @@
   media: ['media'],
   messages: ['messages'],
   subscribers: ['subscribers'],
+  emailTemplates: ['emailTemplates'],
+  emailLogs: ['emailLogs'],
 };

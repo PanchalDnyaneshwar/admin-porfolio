@@ -49,4 +49,10 @@
   newsletter: {
     admin: '/newsletter/admin',
   },
+  mail: {
+    send: '/mail/send',
+    templates: '/mail/templates',
+    templateById: (id: string) => `/mail/templates/${id}`,
+    logs: '/mail/logs',
+  },
 };
