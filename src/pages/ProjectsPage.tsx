@@ -11,6 +11,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -32,6 +33,7 @@ const ProjectsPage = () => {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Project | null>(null);
+  const [projectPendingDelete, setProjectPendingDelete] = useState<Project | null>(null);
 
   const {
     register,
@@ -176,11 +178,7 @@ const ProjectsPage = () => {
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this project?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setProjectPendingDelete(row)}
             >
               Delete
             </Button>
@@ -263,11 +261,17 @@ const ProjectsPage = () => {
           />
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Featured</span>
-            <Switch checked={Boolean(watch('featured'))} onChange={(value) => setValue('featured', value)} />
+            <Switch
+              checked={Boolean(watch('featured'))}
+              onCheckedChange={(value) => setValue('featured', value)}
+            />
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Published</span>
-            <Switch checked={Boolean(watch('isPublished'))} onChange={(value) => setValue('isPublished', value)} />
+            <Switch
+              checked={Boolean(watch('isPublished'))}
+              onCheckedChange={(value) => setValue('isPublished', value)}
+            />
           </div>
 
           <div className="md:col-span-2 flex justify-end gap-3">
@@ -280,6 +284,21 @@ const ProjectsPage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(projectPendingDelete)}
+        title="Delete project"
+        description="This will permanently remove the selected project and its public listing."
+        confirmLabel="Delete project"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setProjectPendingDelete(null)}
+        onConfirm={() => {
+          if (!projectPendingDelete) return;
+          deleteMutation.mutate(projectPendingDelete._id, {
+            onSuccess: () => setProjectPendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

@@ -14,5 +14,6 @@
     email?: string;
     phone?: string;
     location?: string;
+    mapUrl?: string;
   };
 }

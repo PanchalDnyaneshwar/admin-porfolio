@@ -11,6 +11,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -33,6 +34,7 @@ const BlogsPage = () => {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Blog | null>(null);
+  const [blogPendingDelete, setBlogPendingDelete] = useState<Blog | null>(null);
 
   const {
     register,
@@ -165,11 +167,7 @@ const BlogsPage = () => {
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this blog?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setBlogPendingDelete(row)}
             >
               Delete
             </Button>
@@ -258,7 +256,10 @@ const BlogsPage = () => {
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Published</span>
-            <Switch checked={Boolean(watch('isPublished'))} onChange={(value) => setValue('isPublished', value)} />
+            <Switch
+              checked={Boolean(watch('isPublished'))}
+              onCheckedChange={(value) => setValue('isPublished', value)}
+            />
           </div>
 
           <div className="md:col-span-2 flex justify-end gap-3">
@@ -271,6 +272,21 @@ const BlogsPage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(blogPendingDelete)}
+        title="Delete blog"
+        description="This will permanently remove the selected blog post from the admin panel and public site."
+        confirmLabel="Delete blog"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setBlogPendingDelete(null)}
+        onConfirm={() => {
+          if (!blogPendingDelete) return;
+          deleteMutation.mutate(blogPendingDelete._id, {
+            onSuccess: () => setBlogPendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

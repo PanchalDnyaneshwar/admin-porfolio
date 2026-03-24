@@ -86,6 +86,12 @@ const SettingsPage = () => {
         <Input label="Contact email" {...register('contactInfo.email')} />
         <Input label="Contact phone" {...register('contactInfo.phone')} />
         <Input label="Location" {...register('contactInfo.location')} />
+        <Input
+          label="Map embed URL"
+          helperText="Paste the map embed URL used on the public contact page"
+          {...register('contactInfo.mapUrl')}
+          className="md:col-span-2"
+        />
 
         <div className="md:col-span-2">
           <Button type="submit" disabled={isSubmitting || mutation.isPending}>

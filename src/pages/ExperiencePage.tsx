@@ -16,6 +16,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -37,6 +38,8 @@ const ExperiencePage = () => {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Experience | null>(null);
+  const [experiencePendingDelete, setExperiencePendingDelete] =
+    useState<Experience | null>(null);
 
   const {
     register,
@@ -170,11 +173,7 @@ const ExperiencePage = () => {
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this experience entry?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setExperiencePendingDelete(row)}
             >
               Delete
             </Button>
@@ -251,7 +250,7 @@ const ExperiencePage = () => {
             <span className="text-slate-200">Currently working</span>
             <Switch
               checked={Boolean(watch('currentlyWorking'))}
-              onChange={(value) => setValue('currentlyWorking', value)}
+              onCheckedChange={(value) => setValue('currentlyWorking', value)}
             />
           </div>
           <Input label="Sort order" type="number" {...register('sortOrder')} />
@@ -264,7 +263,10 @@ const ExperiencePage = () => {
           />
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Active</span>
-            <Switch checked={Boolean(watch('isActive'))} onChange={(value) => setValue('isActive', value)} />
+            <Switch
+              checked={Boolean(watch('isActive'))}
+              onCheckedChange={(value) => setValue('isActive', value)}
+            />
           </div>
           <div className="md:col-span-2 flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setOpen(false)}>
@@ -276,6 +278,21 @@ const ExperiencePage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(experiencePendingDelete)}
+        title="Delete experience"
+        description="This will permanently remove the selected experience entry from your profile."
+        confirmLabel="Delete entry"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setExperiencePendingDelete(null)}
+        onConfirm={() => {
+          if (!experiencePendingDelete) return;
+          deleteMutation.mutate(experiencePendingDelete._id, {
+            onSuccess: () => setExperiencePendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

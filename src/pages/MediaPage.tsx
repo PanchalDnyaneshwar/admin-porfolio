@@ -11,6 +11,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import { getErrorMessage } from '@/utils/errors';
@@ -23,6 +24,7 @@ const MediaPage = () => {
   });
 
   const [open, setOpen] = useState(false);
+  const [mediaPendingDelete, setMediaPendingDelete] = useState<Media | null>(null);
 
   const {
     register,
@@ -94,11 +96,7 @@ const MediaPage = () => {
           <Button
             variant="danger"
             size="sm"
-            onClick={() => {
-              if (window.confirm('Delete this media item?')) {
-                deleteMutation.mutate(row._id);
-              }
-            }}
+            onClick={() => setMediaPendingDelete(row)}
           >
             Delete
           </Button>
@@ -159,6 +157,21 @@ const MediaPage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(mediaPendingDelete)}
+        title="Delete media item"
+        description="This will remove the selected media record from your library."
+        confirmLabel="Delete media"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setMediaPendingDelete(null)}
+        onConfirm={() => {
+          if (!mediaPendingDelete) return;
+          deleteMutation.mutate(mediaPendingDelete._id, {
+            onSuccess: () => setMediaPendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

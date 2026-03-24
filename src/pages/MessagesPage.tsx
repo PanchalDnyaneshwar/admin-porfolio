@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { deleteMessage, getMessages, updateMessage } from '@/apis/message.api';
@@ -11,10 +11,14 @@ import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
 import Badge from '@/components/ui/Badge';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { getErrorMessage } from '@/utils/errors';
 import { formatDateTime } from '@/lib/formatters';
 
 const MessagesPage = () => {
+  const [messagePendingDelete, setMessagePendingDelete] =
+    useState<ContactMessage | null>(null);
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.messages,
     queryFn: getMessages,
@@ -63,18 +67,16 @@ const MessagesPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => updateMutation.mutate({ id: row._id, payload: { isRead: !row.isRead } })}
+              onClick={() =>
+                updateMutation.mutate({ id: row._id, payload: { isRead: !row.isRead } })
+              }
             >
               {row.isRead ? 'Mark unread' : 'Mark read'}
             </Button>
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this message?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setMessagePendingDelete(row)}
             >
               Delete
             </Button>
@@ -88,7 +90,7 @@ const MessagesPage = () => {
         ),
       },
     ],
-    [deleteMutation, updateMutation],
+    [updateMutation],
   );
 
   if (isLoading) return <LoadingState label="Loading messages..." />;
@@ -118,6 +120,21 @@ const MessagesPage = () => {
       ) : (
         <DataTable data={messages} columns={columns} rowKey={(row) => row._id} />
       )}
+
+      <ConfirmDialog
+        open={Boolean(messagePendingDelete)}
+        title="Delete message"
+        description="This will permanently remove the selected contact message."
+        confirmLabel="Delete message"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setMessagePendingDelete(null)}
+        onConfirm={() => {
+          if (!messagePendingDelete) return;
+          deleteMutation.mutate(messagePendingDelete._id, {
+            onSuccess: () => setMessagePendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

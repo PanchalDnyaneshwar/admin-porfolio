@@ -1,9 +1,10 @@
-﻿import { Navigate } from 'react-router-dom';
+import type { ReactElement } from 'react';
+import { Navigate } from 'react-router-dom';
 import { APP_ROUTES } from '@/constants/appRoutes';
 import { useAuth } from '@/hooks/useAuth';
 import LoadingState from '@/components/ui/LoadingState';
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {

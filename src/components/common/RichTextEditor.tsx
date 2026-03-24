@@ -1,4 +1,4 @@
-﻿import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -21,6 +21,8 @@ import {
   Undo2,
   Redo2,
 } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { cn } from '@/utils/cn';
 
 interface RichTextEditorProps {
@@ -29,6 +31,8 @@ interface RichTextEditorProps {
   placeholder?: string;
   error?: string;
 }
+
+type InsertMode = 'link' | 'image' | null;
 
 const ToolbarButton = ({
   active,
@@ -44,6 +48,7 @@ const ToolbarButton = ({
   <button
     type="button"
     title={title}
+    aria-label={title}
     onClick={onClick}
     className={cn(
       'inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 text-slate-300 transition hover:bg-slate-800/70',
@@ -54,7 +59,15 @@ const ToolbarButton = ({
   </button>
 );
 
-const RichTextEditor = ({ value, onChange, placeholder, error }: RichTextEditorProps) => {
+const RichTextEditor = ({
+  value,
+  onChange,
+  placeholder,
+  error,
+}: RichTextEditorProps) => {
+  const [insertMode, setInsertMode] = useState<InsertMode>(null);
+  const [insertValue, setInsertValue] = useState('');
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -79,116 +92,198 @@ const RichTextEditor = ({ value, onChange, placeholder, error }: RichTextEditorP
     }
   }, [value, editor]);
 
-  const handleLink = () => {
+  const openInsertPanel = (mode: Exclude<InsertMode, null>) => {
     if (!editor) return;
-    const previousUrl = editor.getAttributes('link').href as string | undefined;
-    const url = window.prompt('Enter URL', previousUrl || '');
-    if (url === null) return;
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
+
+    if (mode === 'link') {
+      const previousUrl = editor.getAttributes('link').href as
+        | string
+        | undefined;
+      setInsertValue(previousUrl || '');
+    } else {
+      setInsertValue('');
     }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+
+    setInsertMode(mode);
   };
 
-  const handleImage = () => {
-    if (!editor) return;
-    const url = window.prompt('Enter image URL');
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
+  const closeInsertPanel = () => {
+    setInsertMode(null);
+    setInsertValue('');
+  };
+
+  const applyInsert = () => {
+    if (!editor || !insertMode) return;
+
+    const normalizedValue = insertValue.trim();
+
+    if (insertMode === 'link') {
+      const chain = editor.chain().focus().extendMarkRange('link');
+
+      if (!normalizedValue) {
+        chain.unsetLink().run();
+      } else {
+        chain.setLink({ href: normalizedValue }).run();
+      }
+    }
+
+    if (insertMode === 'image' && normalizedValue) {
+      editor.chain().focus().setImage({ src: normalizedValue }).run();
+    }
+
+    closeInsertPanel();
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-3">
-        <ToolbarButton
-          title="Bold"
-          active={editor?.isActive('bold')}
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-        >
-          <Bold className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Italic"
-          active={editor?.isActive('italic')}
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-        >
-          <Italic className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Underline"
-          active={editor?.isActive('underline')}
-          onClick={() => editor?.chain().focus().toggleUnderline().run()}
-        >
-          <UnderlineIcon className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Strikethrough"
-          active={editor?.isActive('strike')}
-          onClick={() => editor?.chain().focus().toggleStrike().run()}
-        >
-          <Strikethrough className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Heading 2"
-          active={editor?.isActive('heading', { level: 2 })}
-          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-        >
-          <Heading2 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Heading 3"
-          active={editor?.isActive('heading', { level: 3 })}
-          onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
-        >
-          <Heading3 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Bullet list"
-          active={editor?.isActive('bulletList')}
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-        >
-          <List className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Ordered list"
-          active={editor?.isActive('orderedList')}
-          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Blockquote"
-          active={editor?.isActive('blockquote')}
-          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-        >
-          <Quote className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          title="Code block"
-          active={editor?.isActive('codeBlock')}
-          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
-        >
-          <Code className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton title="Insert link" onClick={handleLink} active={editor?.isActive('link')}>
-          <LinkIcon className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton title="Insert image" onClick={handleImage}>
-          <ImageIcon className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton title="Undo" onClick={() => editor?.chain().focus().undo().run()}>
-          <Undo2 className="h-4 w-4" />
-        </ToolbarButton>
-        <ToolbarButton title="Redo" onClick={() => editor?.chain().focus().redo().run()}>
-          <Redo2 className="h-4 w-4" />
-        </ToolbarButton>
+      <div className="space-y-3 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-3">
+        <div className="flex flex-wrap gap-2">
+          <ToolbarButton
+            title="Bold"
+            active={editor?.isActive('bold')}
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+          >
+            <Bold className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Italic"
+            active={editor?.isActive('italic')}
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+          >
+            <Italic className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Underline"
+            active={editor?.isActive('underline')}
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+          >
+            <UnderlineIcon className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Strikethrough"
+            active={editor?.isActive('strike')}
+            onClick={() => editor?.chain().focus().toggleStrike().run()}
+          >
+            <Strikethrough className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Heading 2"
+            active={editor?.isActive('heading', { level: 2 })}
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+          >
+            <Heading2 className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Heading 3"
+            active={editor?.isActive('heading', { level: 3 })}
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+          >
+            <Heading3 className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Bullet list"
+            active={editor?.isActive('bulletList')}
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+          >
+            <List className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Ordered list"
+            active={editor?.isActive('orderedList')}
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+          >
+            <ListOrdered className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Blockquote"
+            active={editor?.isActive('blockquote')}
+            onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+          >
+            <Quote className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Code block"
+            active={editor?.isActive('codeBlock')}
+            onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+          >
+            <Code className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Insert link"
+            onClick={() => openInsertPanel('link')}
+            active={editor?.isActive('link') || insertMode === 'link'}
+          >
+            <LinkIcon className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Insert image"
+            onClick={() => openInsertPanel('image')}
+            active={insertMode === 'image'}
+          >
+            <ImageIcon className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Undo"
+            onClick={() => editor?.chain().focus().undo().run()}
+          >
+            <Undo2 className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            title="Redo"
+            onClick={() => editor?.chain().focus().redo().run()}
+          >
+            <Redo2 className="h-4 w-4" />
+          </ToolbarButton>
+        </div>
+
+        {insertMode ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <Input
+                label={insertMode === 'link' ? 'Link URL' : 'Image URL'}
+                placeholder={
+                  insertMode === 'link'
+                    ? 'https://example.com'
+                    : 'https://example.com/image.jpg'
+                }
+                value={insertValue}
+                onChange={(event) => setInsertValue(event.target.value)}
+                className="flex-1"
+              />
+              <div className="flex gap-2">
+                {insertMode === 'link' ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setInsertValue('');
+                      applyInsert();
+                    }}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
+                <Button type="button" variant="outline" onClick={closeInsertPanel}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={applyInsert}>
+                  {insertMode === 'link' ? 'Apply link' : 'Insert image'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div
         className={cn(
           'min-h-[280px] rounded-2xl border border-slate-800/80 bg-slate-950/60 px-4 py-3 text-slate-100 shadow-soft focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20',
-          error && 'border-rose-500/70 focus-within:border-rose-500 focus-within:ring-rose-500/20',
+          error &&
+            'border-rose-500/70 focus-within:border-rose-500 focus-within:ring-rose-500/20',
         )}
       >
         <EditorContent

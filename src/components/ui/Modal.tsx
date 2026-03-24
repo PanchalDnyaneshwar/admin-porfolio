@@ -23,12 +23,20 @@ const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur"
+      role="presentation"
+      onClick={onClose}
+    >
       <div
         className={cn(
-          'relative w-full max-w-3xl rounded-2xl border border-slate-800 bg-slate-950/95 p-6 shadow-soft',
+          'relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-800 bg-slate-950/95 p-6 shadow-soft',
           className,
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title || 'Dialog'}
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
           {title && <h2 className="text-lg font-semibold text-slate-100">{title}</h2>}
@@ -36,6 +44,7 @@ const Modal = ({ open, onClose, title, children, className }: ModalProps) => {
             type="button"
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-800/70 hover:text-slate-200"
             onClick={onClose}
+            aria-label="Close dialog"
           >
             <X className="h-4 w-4" />
           </button>

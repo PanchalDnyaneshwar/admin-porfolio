@@ -1,12 +1,18 @@
-﻿import type { HTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/utils/cn';
 
-interface SwitchProps extends HTMLAttributes<HTMLButtonElement> {
+interface SwitchProps
+  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   checked: boolean;
-  onChange: (next: boolean) => void;
+  onCheckedChange: (next: boolean) => void;
 }
 
-const Switch = ({ checked, onChange, className, ...props }: SwitchProps) => (
+const Switch = ({
+  checked,
+  onCheckedChange,
+  className,
+  ...props
+}: SwitchProps) => (
   <button
     type="button"
     className={cn(
@@ -14,7 +20,8 @@ const Switch = ({ checked, onChange, className, ...props }: SwitchProps) => (
       checked ? 'bg-primary/90' : 'bg-slate-800',
       className,
     )}
-    onClick={() => onChange(!checked)}
+    onClick={() => onCheckedChange(!checked)}
+    aria-pressed={checked}
     {...props}
   >
     <span

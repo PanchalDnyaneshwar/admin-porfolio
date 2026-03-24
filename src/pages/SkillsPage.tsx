@@ -11,6 +11,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
@@ -36,6 +37,7 @@ const SkillsPage = () => {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Skill | null>(null);
+  const [skillPendingDelete, setSkillPendingDelete] = useState<Skill | null>(null);
 
   const {
     register,
@@ -146,11 +148,7 @@ const SkillsPage = () => {
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this skill?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setSkillPendingDelete(row)}
             >
               Delete
             </Button>
@@ -217,7 +215,10 @@ const SkillsPage = () => {
           <Input label="Sort order" type="number" {...register('sortOrder')} />
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Active</span>
-            <Switch checked={Boolean(watch('isActive'))} onChange={(value) => setValue('isActive', value)} />
+            <Switch
+              checked={Boolean(watch('isActive'))}
+              onCheckedChange={(value) => setValue('isActive', value)}
+            />
           </div>
 
           <div className="md:col-span-2 flex justify-end gap-3">
@@ -230,6 +231,21 @@ const SkillsPage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(skillPendingDelete)}
+        title="Delete skill"
+        description="This will permanently remove the selected skill from your portfolio data."
+        confirmLabel="Delete skill"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setSkillPendingDelete(null)}
+        onConfirm={() => {
+          if (!skillPendingDelete) return;
+          deleteMutation.mutate(skillPendingDelete._id, {
+            onSuccess: () => setSkillPendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };

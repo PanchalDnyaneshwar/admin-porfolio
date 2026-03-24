@@ -16,6 +16,7 @@ import DataTable from '@/components/ui/DataTable';
 import EmptyState from '@/components/ui/EmptyState';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Switch from '@/components/ui/Switch';
@@ -31,6 +32,8 @@ const EmailTemplatesPage = () => {
 
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<EmailTemplate | null>(null);
+  const [templatePendingDelete, setTemplatePendingDelete] =
+    useState<EmailTemplate | null>(null);
 
   const {
     register,
@@ -131,11 +134,7 @@ const EmailTemplatesPage = () => {
             <Button
               variant="danger"
               size="sm"
-              onClick={() => {
-                if (window.confirm('Delete this template?')) {
-                  deleteMutation.mutate(row._id);
-                }
-              }}
+              onClick={() => setTemplatePendingDelete(row)}
             >
               Delete
             </Button>
@@ -214,7 +213,10 @@ const EmailTemplatesPage = () => {
           </div>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Active</span>
-            <Switch checked={Boolean(watch('isActive'))} onChange={(value) => setValue('isActive', value)} />
+            <Switch
+              checked={Boolean(watch('isActive'))}
+              onCheckedChange={(value) => setValue('isActive', value)}
+            />
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={() => setOpen(false)}>
@@ -226,6 +228,21 @@ const EmailTemplatesPage = () => {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(templatePendingDelete)}
+        title="Delete email template"
+        description="This will permanently remove the selected email template."
+        confirmLabel="Delete template"
+        isLoading={deleteMutation.isPending}
+        onClose={() => setTemplatePendingDelete(null)}
+        onConfirm={() => {
+          if (!templatePendingDelete) return;
+          deleteMutation.mutate(templatePendingDelete._id, {
+            onSuccess: () => setTemplatePendingDelete(null),
+          });
+        }}
+      />
     </div>
   );
 };
