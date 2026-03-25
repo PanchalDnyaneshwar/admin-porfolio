@@ -3,8 +3,12 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import type { ApiResponse } from '@/types/api.types';
 import type { Experience } from '@/types/experience.types';
 
+const ADMIN_LIST_LIMIT = 1000;
+
 export const getExperience = async () => {
-  const response = await api.get<ApiResponse<Experience[]>>(API_ROUTES.experience.admin);
+  const response = await api.get<ApiResponse<Experience[]>>(API_ROUTES.experience.admin, {
+    params: { limit: ADMIN_LIST_LIMIT },
+  });
   return response.data;
 };
 

@@ -1,8 +1,9 @@
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { getEmailTemplates, sendMail } from '@/apis/mail.api';
-import type { EmailTemplate, SendMailPayload } from '@/types/mail.types';
+import { AlertCircle, MailCheck } from 'lucide-react';
+import { getEmailTemplates, getMailStatus, sendMail } from '@/apis/mail.api';
+import type { SendMailPayload } from '@/types/mail.types';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -34,8 +35,13 @@ const EmailPage = () => {
     queryKey: QUERY_KEYS.emailTemplates,
     queryFn: getEmailTemplates,
   });
+  const { data: mailStatusData } = useQuery({
+    queryKey: [...QUERY_KEYS.emailTemplates, 'status'],
+    queryFn: getMailStatus,
+  });
 
   const templates = templatesData?.data ?? [];
+  const mailStatus = mailStatusData?.data;
 
   const mutation = useMutation({
     mutationFn: sendMail,
@@ -63,13 +69,39 @@ const EmailPage = () => {
         Use SMTP to send a direct email to any recipient.
       </p>
 
+      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+        <div className="flex items-start gap-3">
+          {mailStatus?.configured ? (
+            <MailCheck className="mt-0.5 h-5 w-5 text-emerald-300" />
+          ) : (
+            <AlertCircle className="mt-0.5 h-5 w-5 text-amber-300" />
+          )}
+          <div>
+            <p className="font-medium text-slate-100">
+              {mailStatus?.configured ? 'SMTP is configured' : 'SMTP needs attention'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {mailStatus?.configured
+                ? `Using ${mailStatus.host}:${mailStatus.port} with sender ${mailStatus.from ?? 'not set'}.`
+                : 'The backend needs valid SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM values before mail can be sent reliably.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form className="mt-6 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
         <Input
           label="To"
           type="email"
           placeholder="recipient@example.com"
           error={errors.to?.message}
-          {...register('to', { required: 'Recipient email is required' })}
+          {...register('to', {
+            required: 'Recipient email is required',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Enter a valid recipient email',
+            },
+          })}
         />
         <Select
           label="Template (optional)"
@@ -94,12 +126,24 @@ const EmailPage = () => {
           label="Reply-To (optional)"
           type="email"
           placeholder="reply@example.com"
-          {...register('replyTo')}
+          error={errors.replyTo?.message}
+          {...register('replyTo', {
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Enter a valid reply-to email',
+            },
+          })}
         />
         <Input
           label="Subject"
           error={errors.subject?.message}
-          {...register('subject', { required: 'Subject is required' })}
+          {...register('subject', {
+            required: 'Subject is required',
+            minLength: {
+              value: 3,
+              message: 'Subject should be at least 3 characters',
+            },
+          })}
         />
         <Textarea
           label="Plain text message (optional)"

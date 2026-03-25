@@ -1,4 +1,4 @@
-﻿export const API_ROUTES = {
+export const API_ROUTES = {
   auth: {
     login: '/auth/login',
     me: '/auth/me',
@@ -39,6 +39,8 @@
   media: {
     admin: '/media/admin',
     base: '/media',
+    upload: '/media/upload',
+    status: '/media/status',
     byId: (id: string) => `/media/${id}`,
   },
   contact: {
@@ -51,6 +53,7 @@
   },
   mail: {
     send: '/mail/send',
+    status: '/mail/status',
     templates: '/mail/templates',
     templateById: (id: string) => `/mail/templates/${id}`,
     logs: '/mail/logs',

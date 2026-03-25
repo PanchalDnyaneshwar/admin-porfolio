@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -201,7 +201,13 @@ const SkillsPage = () => {
           <Input
             label="Skill name"
             error={errors.name?.message}
-            {...register('name', { required: 'Name is required' })}
+            {...register('name', {
+              required: 'Name is required',
+              maxLength: {
+                value: 80,
+                message: 'Skill name should be 80 characters or fewer',
+              },
+            })}
           />
           <Select label="Category" {...register('category')}>
             {SKILL_CATEGORIES.map((category) => (
@@ -210,9 +216,29 @@ const SkillsPage = () => {
               </option>
             ))}
           </Select>
-          <Input label="Level" {...register('level')} />
+          <Input
+            label="Level"
+            error={errors.level?.message}
+            {...register('level', {
+              maxLength: {
+                value: 50,
+                message: 'Level should be 50 characters or fewer',
+              },
+            })}
+          />
           <Input label="Icon" {...register('icon')} />
-          <Input label="Sort order" type="number" {...register('sortOrder')} />
+          <Input
+            label="Sort order"
+            type="number"
+            error={errors.sortOrder?.message}
+            {...register('sortOrder', {
+              valueAsNumber: true,
+              min: {
+                value: 0,
+                message: 'Sort order must be 0 or greater',
+              },
+            })}
+          />
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Active</span>
             <Switch

@@ -3,8 +3,12 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import type { ApiResponse } from '@/types/api.types';
 import type { Skill } from '@/types/skill.types';
 
+const ADMIN_LIST_LIMIT = 1000;
+
 export const getSkills = async () => {
-  const response = await api.get<ApiResponse<Skill[]>>(API_ROUTES.skills.admin);
+  const response = await api.get<ApiResponse<Skill[]>>(API_ROUTES.skills.admin, {
+    params: { limit: ADMIN_LIST_LIMIT },
+  });
   return response.data;
 };
 

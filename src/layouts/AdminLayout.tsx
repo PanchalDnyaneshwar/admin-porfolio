@@ -13,9 +13,12 @@ const AdminLayout = () => {
         <Sidebar className="sticky top-0 hidden h-screen lg:flex" />
 
         <div className="flex-1">
-          <Topbar onMenuToggle={() => setMobileOpen((prev) => !prev)} />
+          <Topbar
+            onMenuToggle={() => setMobileOpen((prev) => !prev)}
+            isMenuOpen={mobileOpen}
+          />
 
-          <main className="relative min-h-[calc(100vh-80px)] bg-hero-glow bg-grid px-6 py-8">
+          <main className="relative min-h-[calc(100vh-80px)] bg-hero-glow bg-grid px-4 py-6 md:px-6 xl:px-8">
             <Outlet />
           </main>
         </div>
@@ -30,7 +33,7 @@ const AdminLayout = () => {
       />
       <div
         className={cn(
-          'fixed left-0 top-0 z-50 h-full w-64 transform transition-transform lg:hidden',
+          'fixed left-0 top-0 z-50 h-full w-72 transform transition-transform lg:hidden',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >

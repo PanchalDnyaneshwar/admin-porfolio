@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -117,6 +117,8 @@ const ExperiencePage = () => {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  const currentlyWorking = Boolean(watch('currentlyWorking'));
+
   const onSubmit = async (values: ExperienceForm) => {
     const payload: Partial<Experience> = {
       companyName: values.companyName,
@@ -227,12 +229,24 @@ const ExperiencePage = () => {
           <Input
             label="Company"
             error={errors.companyName?.message}
-            {...register('companyName', { required: 'Company is required' })}
+            {...register('companyName', {
+              required: 'Company is required',
+              maxLength: {
+                value: 120,
+                message: 'Company should be 120 characters or fewer',
+              },
+            })}
           />
           <Input
             label="Role"
             error={errors.role?.message}
-            {...register('role', { required: 'Role is required' })}
+            {...register('role', {
+              required: 'Role is required',
+              maxLength: {
+                value: 120,
+                message: 'Role should be 120 characters or fewer',
+              },
+            })}
           />
           <Input
             label="Start date"
@@ -243,17 +257,32 @@ const ExperiencePage = () => {
           <Input
             label="End date"
             type="date"
-            disabled={Boolean(watch('currentlyWorking'))}
-            {...register('endDate')}
+            disabled={currentlyWorking}
+            error={errors.endDate?.message}
+            {...register('endDate', {
+              validate: (value) =>
+                currentlyWorking || value ? true : 'End date is required unless currently working',
+            })}
           />
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-slate-200">Currently working</span>
             <Switch
-              checked={Boolean(watch('currentlyWorking'))}
+              checked={currentlyWorking}
               onCheckedChange={(value) => setValue('currentlyWorking', value)}
             />
           </div>
-          <Input label="Sort order" type="number" {...register('sortOrder')} />
+          <Input
+            label="Sort order"
+            type="number"
+            error={errors.sortOrder?.message}
+            {...register('sortOrder', {
+              valueAsNumber: true,
+              min: {
+                value: 0,
+                message: 'Sort order must be 0 or greater',
+              },
+            })}
+          />
           <Textarea label="Description" {...register('description')} className="md:col-span-2" />
           <Input
             label="Technologies"

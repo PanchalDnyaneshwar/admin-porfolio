@@ -26,3 +26,10 @@ export interface EmailLog {
   error?: string;
   createdAt?: string;
 }
+
+export interface MailServiceStatus {
+  configured: boolean;
+  host: string | null;
+  port: number;
+  from: string | null;
+}

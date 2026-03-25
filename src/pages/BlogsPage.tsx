@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -18,6 +18,7 @@ import Textarea from '@/components/ui/Textarea';
 import Switch from '@/components/ui/Switch';
 import Badge from '@/components/ui/Badge';
 import RichTextEditor from '@/components/common/RichTextEditor';
+import MediaPickerField from '@/components/common/MediaPickerField';
 import { getErrorMessage } from '@/utils/errors';
 import { listToString, toList } from '@/utils/arrays';
 import { formatDate } from '@/lib/formatters';
@@ -220,12 +221,37 @@ const BlogsPage = () => {
           <Input
             label="Title"
             error={errors.title?.message}
-            {...register('title', { required: 'Title is required' })}
+            {...register('title', {
+              required: 'Title is required',
+              maxLength: {
+                value: 160,
+                message: 'Title should be 160 characters or fewer',
+              },
+            })}
           />
           <Input label="Slug" helperText="Leave blank to auto-generate" {...register('slug')} />
           <Input label="Category" {...register('category')} />
-          <Input label="Featured image URL" {...register('featuredImage')} />
-          <Input label="Read time (minutes)" type="number" {...register('readTime')} />
+          <div className="md:col-span-2">
+            <MediaPickerField
+              label="Featured image"
+              value={watch('featuredImage')}
+              helperText="Upload or choose the blog cover image."
+              resourceType="image"
+              onChange={(value) => setValue('featuredImage', String(value), { shouldDirty: true })}
+            />
+          </div>
+          <Input
+            label="Read time (minutes)"
+            type="number"
+            error={errors.readTime?.message}
+            {...register('readTime', {
+              valueAsNumber: true,
+              min: {
+                value: 1,
+                message: 'Read time must be at least 1 minute',
+              },
+            })}
+          />
           <Input label="Publish date" type="date" {...register('publishedAt')} />
           <Input
             label="Tags"
@@ -236,7 +262,13 @@ const BlogsPage = () => {
           <Textarea
             label="Excerpt"
             error={errors.excerpt?.message}
-            {...register('excerpt', { required: 'Excerpt is required' })}
+            {...register('excerpt', {
+              required: 'Excerpt is required',
+              maxLength: {
+                value: 300,
+                message: 'Excerpt should be 300 characters or fewer',
+              },
+            })}
             className="md:col-span-2"
           />
           <div className="md:col-span-2">
@@ -289,6 +321,15 @@ const BlogsPage = () => {
       />
     </div>
   );
+};
+
+const isValidUrl = (value: string) => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export default BlogsPage;

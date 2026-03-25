@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { Inbox, MailCheck, MailOpen, Trash2 } from 'lucide-react';
 import { deleteMessage, getMessages, updateMessage } from '@/apis/message.api';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import type { ContactMessage } from '@/types/message.types';
@@ -16,8 +17,7 @@ import { getErrorMessage } from '@/utils/errors';
 import { formatDateTime } from '@/lib/formatters';
 
 const MessagesPage = () => {
-  const [messagePendingDelete, setMessagePendingDelete] =
-    useState<ContactMessage | null>(null);
+  const [messagePendingDelete, setMessagePendingDelete] = useState<ContactMessage | null>(null);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.messages,
@@ -61,6 +61,12 @@ const MessagesPage = () => {
         render: (row: ContactMessage) => formatDateTime(row.createdAt),
       },
       {
+        header: 'Message',
+        render: (row: ContactMessage) => (
+          <p className="max-w-xs text-xs leading-6 text-slate-400">{row.message}</p>
+        ),
+      },
+      {
         header: 'Actions',
         render: (row: ContactMessage) => (
           <div className="flex flex-wrap gap-2">
@@ -71,6 +77,7 @@ const MessagesPage = () => {
                 updateMutation.mutate({ id: row._id, payload: { isRead: !row.isRead } })
               }
             >
+              {row.isRead ? <MailOpen className="h-4 w-4" /> : <MailCheck className="h-4 w-4" />}
               {row.isRead ? 'Mark unread' : 'Mark read'}
             </Button>
             <Button
@@ -78,15 +85,10 @@ const MessagesPage = () => {
               size="sm"
               onClick={() => setMessagePendingDelete(row)}
             >
+              <Trash2 className="h-4 w-4" />
               Delete
             </Button>
           </div>
-        ),
-      },
-      {
-        header: 'Message',
-        render: (row: ContactMessage) => (
-          <p className="max-w-xs text-xs text-slate-400">{row.message}</p>
         ),
       },
     ],
@@ -105,13 +107,19 @@ const MessagesPage = () => {
   }
 
   const messages = data.data;
+  const unreadCount = messages.filter((message) => !message.isRead).length;
 
   return (
     <div className="space-y-6">
-      <Card className="flex flex-wrap items-center justify-between gap-4">
+      <Card className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <h3 className="text-lg font-semibold text-slate-100">Messages</h3>
-          <p className="text-sm text-slate-400">Review contact form submissions.</p>
+          <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Inbox</p>
+          <h3 className="mt-2 text-2xl font-semibold text-slate-50">Messages</h3>
+          <p className="mt-2 text-sm text-slate-400">Review contact form submissions and keep the inbox organized.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <MetricCard icon={Inbox} label="Total messages" value={String(messages.length)} />
+          <MetricCard icon={MailCheck} label="Unread" value={String(unreadCount)} />
         </div>
       </Card>
 
@@ -138,5 +146,27 @@ const MessagesPage = () => {
     </div>
   );
 };
+
+const MetricCard = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Inbox;
+  label: string;
+  value: string;
+}) => (
+  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-3">
+    <div className="flex items-center gap-3">
+      <div className="rounded-xl bg-slate-900 p-2 text-primary">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{label}</p>
+        <p className="text-lg font-semibold text-slate-50">{value}</p>
+      </div>
+    </div>
+  </div>
+);
 
 export default MessagesPage;

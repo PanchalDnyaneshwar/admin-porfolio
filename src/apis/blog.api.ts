@@ -3,8 +3,12 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import type { ApiResponse } from '@/types/api.types';
 import type { Blog } from '@/types/blog.types';
 
+const ADMIN_LIST_LIMIT = 1000;
+
 export const getBlogs = async () => {
-  const response = await api.get<ApiResponse<Blog[]>>(API_ROUTES.blogs.admin);
+  const response = await api.get<ApiResponse<Blog[]>>(API_ROUTES.blogs.admin, {
+    params: { limit: ADMIN_LIST_LIMIT },
+  });
   return response.data;
 };
 

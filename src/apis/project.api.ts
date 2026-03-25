@@ -3,8 +3,12 @@ import { API_ROUTES } from '@/constants/apiRoutes';
 import type { ApiResponse } from '@/types/api.types';
 import type { Project } from '@/types/project.types';
 
+const ADMIN_LIST_LIMIT = 1000;
+
 export const getProjects = async () => {
-  const response = await api.get<ApiResponse<Project[]>>(API_ROUTES.projects.admin);
+  const response = await api.get<ApiResponse<Project[]>>(API_ROUTES.projects.admin, {
+    params: { limit: ADMIN_LIST_LIMIT },
+  });
   return response.data;
 };
 

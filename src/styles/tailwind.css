@@ -11,8 +11,11 @@
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
-    background: #081120;
-    color: #e2e8f0;
+    background:
+      radial-gradient(circle at top left, rgba(94, 214, 192, 0.08), transparent 24%),
+      radial-gradient(circle at top right, rgba(244, 184, 96, 0.07), transparent 22%),
+      linear-gradient(180deg, #08161d 0%, #0b1b24 100%);
+    color: #e5eef2;
     font-family:
       Inter,
       ui-sans-serif,
@@ -72,7 +75,8 @@
 
   .bg-hero-glow {
     background-image:
-      radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 26%),
-      radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 24%);
+      radial-gradient(circle at top left, rgba(94, 214, 192, 0.14), transparent 26%),
+      radial-gradient(circle at top right, rgba(244, 184, 96, 0.12), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 24%);
   }
 }

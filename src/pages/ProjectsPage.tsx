@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -17,6 +17,7 @@ import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Switch from '@/components/ui/Switch';
 import Badge from '@/components/ui/Badge';
+import MediaPickerField from '@/components/common/MediaPickerField';
 import { getErrorMessage } from '@/utils/errors';
 import { listToString, toList } from '@/utils/arrays';
 
@@ -99,7 +100,8 @@ const ProjectsPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: Partial<Project> }) => updateProject(id, payload),
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<Project> }) =>
+      updateProject(id, payload),
     onSuccess: () => {
       toast.success('Project updated');
       setOpen(false);
@@ -232,27 +234,78 @@ const ProjectsPage = () => {
           <Input
             label="Title"
             error={errors.title?.message}
-            {...register('title', { required: 'Title is required' })}
+            {...register('title', {
+              required: 'Title is required',
+              maxLength: {
+                value: 150,
+                message: 'Title should be 150 characters or fewer',
+              },
+            })}
           />
           <Input label="Slug" helperText="Leave blank to auto-generate" {...register('slug')} />
           <Input label="Category" {...register('category')} />
-          <Input label="Thumbnail URL" {...register('thumbnail')} />
-          <Input label="Live URL" {...register('liveUrl')} />
-          <Input label="GitHub URL" {...register('githubUrl')} />
-          <Input label="Sort order" type="number" {...register('sortOrder')} />
+          <div className="md:col-span-2">
+            <MediaPickerField
+              label="Thumbnail"
+              value={watch('thumbnail')}
+              helperText="Upload or choose the project cover image."
+              resourceType="image"
+              onChange={(value) => setValue('thumbnail', String(value), { shouldDirty: true })}
+            />
+          </div>
+          <Input
+            label="Live URL"
+            error={errors.liveUrl?.message}
+            {...register('liveUrl', {
+              validate: (value) => !value || isValidUrl(value) || 'Live URL must be valid',
+            })}
+          />
+          <Input
+            label="GitHub URL"
+            error={errors.githubUrl?.message}
+            {...register('githubUrl', {
+              validate: (value) => !value || isValidUrl(value) || 'GitHub URL must be valid',
+            })}
+          />
+          <Input
+            label="Sort order"
+            type="number"
+            error={errors.sortOrder?.message}
+            {...register('sortOrder', {
+              valueAsNumber: true,
+              min: {
+                value: 0,
+                message: 'Sort order must be 0 or greater',
+              },
+            })}
+          />
           <Textarea
             label="Short description"
             error={errors.shortDescription?.message}
-            {...register('shortDescription', { required: 'Short description is required' })}
+            {...register('shortDescription', {
+              required: 'Short description is required',
+              maxLength: {
+                value: 300,
+                message: 'Short description should be 300 characters or fewer',
+              },
+            })}
             className="md:col-span-2"
           />
           <Textarea label="Full description" {...register('fullDescription')} className="md:col-span-2" />
-          <Input
-            label="Images"
-            helperText="Comma separated URLs"
-            {...register('imagesInput')}
-            className="md:col-span-2"
-          />
+          <div className="md:col-span-2">
+            <MediaPickerField
+              label="Project images"
+              value={watch('imagesInput') ? toList(watch('imagesInput')) : []}
+              helperText="Upload or choose one or more gallery images."
+              resourceType="image"
+              multiple
+              onChange={(value) =>
+                setValue('imagesInput', Array.isArray(value) ? value.join(', ') : String(value), {
+                  shouldDirty: true,
+                })
+              }
+            />
+          </div>
           <Input
             label="Tech stack"
             helperText="Comma separated"
@@ -301,6 +354,15 @@ const ProjectsPage = () => {
       />
     </div>
   );
+};
+
+const isValidUrl = (value: string) => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export default ProjectsPage;

@@ -1,8 +1,8 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { getAdminProfile, createProfile } from '@/apis/profile.api';
+import { createProfile, getAdminProfile, updateProfile } from '@/apis/profile.api';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import type { Profile } from '@/types/profile.types';
 import Card from '@/components/ui/Card';
@@ -11,6 +11,7 @@ import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
+import MediaPickerField from '@/components/common/MediaPickerField';
 import { getErrorMessage } from '@/utils/errors';
 
 const ProfilePage = () => {
@@ -24,6 +25,8 @@ const ProfilePage = () => {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Profile>({
     defaultValues: {
@@ -41,7 +44,7 @@ const ProfilePage = () => {
   }, [data, reset]);
 
   const mutation = useMutation({
-    mutationFn: createProfile,
+    mutationFn: (values: Profile) => (data?.data ? updateProfile(values) : createProfile(values)),
     onSuccess: () => toast.success('Profile saved'),
     onError: (error) => toast.error(getErrorMessage(error)),
   });
@@ -85,22 +88,68 @@ const ProfilePage = () => {
           label="Email"
           type="email"
           error={errors.email?.message}
-          {...register('email', { required: 'Email is required' })}
+          {...register('email', {
+            required: 'Email is required',
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: 'Enter a valid email address',
+            },
+          })}
         />
         <Input label="Phone" {...register('phone')} />
         <Input label="Location" {...register('location')} />
-        <Input label="Profile image URL" {...register('profileImage')} />
-        <Input label="Resume URL" {...register('resumeUrl')} />
+        <div className="md:col-span-2">
+          <MediaPickerField
+            label="Profile image"
+            value={watch('profileImage')}
+            helperText="Upload or choose an image from the media library."
+            resourceType="image"
+            onChange={(value) => setValue('profileImage', String(value), { shouldDirty: true })}
+          />
+        </div>
+        <div className="md:col-span-2">
+          <MediaPickerField
+            label="Resume document"
+            value={watch('resumeUrl')}
+            helperText="Upload or choose a PDF/document from the media library."
+            resourceType="raw"
+            onChange={(value) => setValue('resumeUrl', String(value), { shouldDirty: true })}
+          />
+        </div>
         <Textarea label="Short bio" {...register('shortBio')} className="md:col-span-2" />
         <Textarea label="Long bio" {...register('longBio')} className="md:col-span-2" />
 
         <div className="md:col-span-2">
           <h4 className="text-sm font-semibold text-slate-200">Social Links</h4>
         </div>
-        <Input label="GitHub" {...register('socialLinks.github')} />
-        <Input label="LinkedIn" {...register('socialLinks.linkedin')} />
-        <Input label="Twitter" {...register('socialLinks.twitter')} />
-        <Input label="Portfolio" {...register('socialLinks.portfolio')} />
+        <Input
+          label="GitHub"
+          error={errors.socialLinks?.github?.message}
+          {...register('socialLinks.github', {
+            validate: (value) => !value || isValidUrl(value) || 'GitHub URL must be valid',
+          })}
+        />
+        <Input
+          label="LinkedIn"
+          error={errors.socialLinks?.linkedin?.message}
+          {...register('socialLinks.linkedin', {
+            validate: (value) => !value || isValidUrl(value) || 'LinkedIn URL must be valid',
+          })}
+        />
+        <Input
+          label="Twitter"
+          error={errors.socialLinks?.twitter?.message}
+          {...register('socialLinks.twitter', {
+            validate: (value) => !value || isValidUrl(value) || 'Twitter URL must be valid',
+          })}
+        />
+        <Input
+          label="Portfolio"
+          error={errors.socialLinks?.portfolio?.message}
+          {...register('socialLinks.portfolio', {
+            validate: (value) => !value || isValidUrl(value) || 'Portfolio URL must be valid',
+          })}
+        />
 
         <div className="md:col-span-2">
           <Button type="submit" disabled={isSubmitting || mutation.isPending}>
@@ -110,6 +159,15 @@ const ProfilePage = () => {
       </form>
     </Card>
   );
+};
+
+const isValidUrl = (value: string) => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export default ProfilePage;
