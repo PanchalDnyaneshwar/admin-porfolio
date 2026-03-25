@@ -13,6 +13,7 @@ import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
 import MediaPickerField from '@/components/common/MediaPickerField';
 import { getErrorMessage } from '@/utils/errors';
+import { stripMongoDocumentFields } from '@/utils/mongoPayload';
 
 const SettingsPage = () => {
   const { data, isLoading, isError, error } = useQuery({
@@ -48,7 +49,8 @@ const SettingsPage = () => {
   });
 
   const onSubmit = async (values: Settings) => {
-    await mutation.mutateAsync(values);
+    const sanitized = stripMongoDocumentFields(values);
+    await mutation.mutateAsync(sanitized);
   };
 
   if (isLoading) return <LoadingState label="Loading settings..." />;

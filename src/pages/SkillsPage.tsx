@@ -18,6 +18,7 @@ import Select from '@/components/ui/Select';
 import Switch from '@/components/ui/Switch';
 import Badge from '@/components/ui/Badge';
 import { getErrorMessage } from '@/utils/errors';
+import { stripMongoDocumentFields } from '@/utils/mongoPayload';
 
 const SKILL_CATEGORIES: SkillCategory[] = [
   'LANGUAGES',
@@ -104,11 +105,11 @@ const SkillsPage = () => {
   });
 
   const onSubmit = async (values: Partial<Skill>) => {
-    const payload = {
+    const payload = stripMongoDocumentFields({
       ...values,
       sortOrder: Number(values.sortOrder ?? 0),
       isActive: Boolean(values.isActive),
-    };
+    });
 
     if (selected) {
       await updateMutation.mutateAsync({ id: selected._id, payload });

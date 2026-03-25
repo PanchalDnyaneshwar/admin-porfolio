@@ -23,6 +23,7 @@ import Switch from '@/components/ui/Switch';
 import Badge from '@/components/ui/Badge';
 import RichTextEditor from '@/components/common/RichTextEditor';
 import { getErrorMessage } from '@/utils/errors';
+import { stripMongoDocumentFields } from '@/utils/mongoPayload';
 
 const EmailTemplatesPage = () => {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -93,10 +94,10 @@ const EmailTemplatesPage = () => {
   });
 
   const onSubmit = async (values: Partial<EmailTemplate>) => {
-    const payload = {
+    const payload = stripMongoDocumentFields({
       ...values,
       isActive: Boolean(values.isActive),
-    };
+    });
 
     if (selected) {
       await updateMutation.mutateAsync({ id: selected._id, payload });

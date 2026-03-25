@@ -1,52 +1,70 @@
-﻿import { Route, Routes } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import ProtectedRoute from '@/routes/ProtectedRoute';
 import { APP_ROUTES } from '@/constants/appRoutes';
-import LoginPage from '@/pages/LoginPage';
-import DashboardPage from '@/pages/DashboardPage';
-import ProfilePage from '@/pages/ProfilePage';
-import SettingsPage from '@/pages/SettingsPage';
-import SkillsPage from '@/pages/SkillsPage';
-import ExperiencePage from '@/pages/ExperiencePage';
-import ProjectsPage from '@/pages/ProjectsPage';
-import BlogsPage from '@/pages/BlogsPage';
-import MediaPage from '@/pages/MediaPage';
-import MessagesPage from '@/pages/MessagesPage';
-import SubscribersPage from '@/pages/SubscribersPage';
-import EmailPage from '@/pages/EmailPage';
-import EmailTemplatesPage from '@/pages/EmailTemplatesPage';
-import EmailHistoryPage from '@/pages/EmailHistoryPage';
-import NotFoundPage from '@/pages/NotFoundPage';
+
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const SkillsPage = lazy(() => import('@/pages/SkillsPage'));
+const ExperiencePage = lazy(() => import('@/pages/ExperiencePage'));
+const ProjectsPage = lazy(() => import('@/pages/ProjectsPage'));
+const BlogsPage = lazy(() => import('@/pages/BlogsPage'));
+const MediaPage = lazy(() => import('@/pages/MediaPage'));
+const MessagesPage = lazy(() => import('@/pages/MessagesPage'));
+const SubscribersPage = lazy(() => import('@/pages/SubscribersPage'));
+const EmailPage = lazy(() => import('@/pages/EmailPage'));
+const EmailTemplatesPage = lazy(() => import('@/pages/EmailTemplatesPage'));
+const EmailHistoryPage = lazy(() => import('@/pages/EmailHistoryPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center text-slate-400">
+      Loading…
+    </div>
+  );
+}
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route path={APP_ROUTES.login} element={<LoginPage />} />
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path={APP_ROUTES.login} element={<LoginPage />} />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path={APP_ROUTES.dashboard} element={<DashboardPage />} />
-        <Route path={APP_ROUTES.profile} element={<ProfilePage />} />
-        <Route path={APP_ROUTES.settings} element={<SettingsPage />} />
-        <Route path={APP_ROUTES.skills} element={<SkillsPage />} />
-        <Route path={APP_ROUTES.experience} element={<ExperiencePage />} />
-        <Route path={APP_ROUTES.projects} element={<ProjectsPage />} />
-        <Route path={APP_ROUTES.blogs} element={<BlogsPage />} />
-        <Route path={APP_ROUTES.media} element={<MediaPage />} />
-        <Route path={APP_ROUTES.messages} element={<MessagesPage />} />
-        <Route path={APP_ROUTES.email} element={<EmailPage />} />
-        <Route path={APP_ROUTES.emailTemplates} element={<EmailTemplatesPage />} />
-        <Route path={APP_ROUTES.emailHistory} element={<EmailHistoryPage />} />
-        <Route path={APP_ROUTES.subscribers} element={<SubscribersPage />} />
-      </Route>
+        <Route
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path={APP_ROUTES.dashboard} element={<DashboardPage />} />
+          <Route path={APP_ROUTES.profile} element={<ProfilePage />} />
+          <Route path={APP_ROUTES.settings} element={<SettingsPage />} />
+          <Route path={APP_ROUTES.skills} element={<SkillsPage />} />
+          <Route path={APP_ROUTES.experience} element={<ExperiencePage />} />
+          <Route path={APP_ROUTES.projects} element={<ProjectsPage />} />
+          <Route path={APP_ROUTES.blogs} element={<BlogsPage />} />
+          <Route path={APP_ROUTES.media} element={<MediaPage />} />
+          <Route path={APP_ROUTES.messages} element={<MessagesPage />} />
+          <Route path={APP_ROUTES.email} element={<EmailPage />} />
+          <Route
+            path={APP_ROUTES.emailTemplates}
+            element={<EmailTemplatesPage />}
+          />
+          <Route
+            path={APP_ROUTES.emailHistory}
+            element={<EmailHistoryPage />}
+          />
+          <Route path={APP_ROUTES.subscribers} element={<SubscribersPage />} />
+        </Route>
 
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
   );
 }
 

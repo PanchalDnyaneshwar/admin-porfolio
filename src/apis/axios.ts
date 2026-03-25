@@ -1,13 +1,9 @@
-﻿import axios from 'axios';
+import axios from 'axios';
+import { API_BASE_URL } from '@/utils/apiBaseUrl';
 import { getToken } from '@/utils/storage';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-if (!import.meta.env.VITE_API_BASE_URL) {
-  console.error('Missing VITE_API_BASE_URL. Falling back to http://localhost:5000');
-}
-
 const api = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
   timeout: 20000,
 });
 

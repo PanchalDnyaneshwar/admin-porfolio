@@ -13,6 +13,7 @@ import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
 import MediaPickerField from '@/components/common/MediaPickerField';
 import { getErrorMessage } from '@/utils/errors';
+import { stripMongoDocumentFields } from '@/utils/mongoPayload';
 
 const ProfilePage = () => {
   const { data, isLoading, isError, error } = useQuery({
@@ -50,7 +51,8 @@ const ProfilePage = () => {
   });
 
   const onSubmit = async (values: Profile) => {
-    await mutation.mutateAsync(values);
+    const sanitized = stripMongoDocumentFields(values);
+    await mutation.mutateAsync(sanitized);
   };
 
   if (isLoading) return <LoadingState label="Loading profile..." />;
